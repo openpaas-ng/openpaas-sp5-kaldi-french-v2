@@ -1,0 +1,8 @@
+
+
+#num2Words
+pip install num2words
+python setup.py install
+python setup.py test
+from num2words import num2words
+num2words(42, lang='fr')
