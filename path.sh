@@ -2,10 +2,13 @@ export KALDI_ROOT=`pwd`/../../..
 export PATH=$PWD/tools/festival/nsw/bin:$PWD/utils/:$KALDI_ROOT/tools/openfst/bin:$PWD:$PATH
 [ ! -f $KALDI_ROOT/tools/config/common_path.sh ] && echo >&2 "The standard file $KALDI_ROOT/tools/config/common_path.sh is not present -> Exit!" && exit 1
 . $KALDI_ROOT/tools/config/common_path.sh
-export LC_ALL=C
+LANG=en_US.UTF-8
+LANGUAGE=en_US.UTF-8
+LC_ALL=en_US.UTF-8
 
 # we use this both in the (optional) LM training and the G2P-related scripts
 PYTHON='python2.7'
+PYTHON3='python3'
 
 ### Below are the paths used by the optional parts of the recipe
 
