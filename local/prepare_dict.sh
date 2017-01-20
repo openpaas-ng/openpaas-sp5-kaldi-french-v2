@@ -42,7 +42,7 @@ mkdir -p $dst_dir || exit 1;
 
 if [ $stage -le 0 ]; then
   echo "Downloading and preparing CMUdict"
-  if [ ! -s $cmudict_dir/fr.dict ]; then
+  if [ ! -s $cmudict_plain ]; then
   # a modifier
     svn co -r 12440 https://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict $cmudict_dir || exit 1;
   fi
@@ -82,6 +82,7 @@ if [ $stage -le 1 ]; then
     local/g2p.sh  $auto_vocab_prefix.JOB $g2p_model_dir $auto_lexicon_prefix.JOB || exit 1
   g2p_vocab_size=$(wc -l <$g2p_dir/vocab_autogen.full)
   g2p_lex_size=$(wc -l < <(cat $auto_lexicon_prefix.*))
+  # TODO Fix problem
   [[ "$g2p_vocab_size" -eq "$g2p_lex_size" ]] || { echo "Unexpected G2P error"; exit 1; }
   sort <(cat $auto_vocab_prefix.*) >$dst_dir/vocab_autogen.txt
   sort <(cat $auto_lexicon_prefix.*) >$dst_dir/lexicon_autogen.txt
@@ -94,6 +95,7 @@ if [ $stage -le 2 ]; then
     cat - $dst_dir/lexicon_autogen.txt | sort >$lexicon_raw_nosil || exit 1
   raw_lex_size=$(cat $lexicon_raw_nosil | awk '{print $1}' | sort -u | wc -l)
   vocab_size=$(wc -l <$vocab)
+  # TODO Fixe problem
   [[ "$vocab_size" -eq "$raw_lex_size" ]] || {
     echo "Inconsistent lexicon($raw_lex_size) vs vocabulary($vocab_size) size!";
     exit 1; }
@@ -102,7 +104,7 @@ fi
 
 # The copy operation below is necessary, if we skip the g2p stages(e.g. using --stage 3)
 if [[ ! -s "$lexicon_raw_nosil" ]]; then
-  cp $lm_dir/librispeech-lexicon.txt $lexicon_raw_nosil || exit 1
+  cp $cmudict_plain $lexicon_raw_nosil || exit 1
 fi
 
 if [ $stage -le 3 ]; then
