@@ -43,9 +43,10 @@ local/g2p/train_g2p.sh cmu_dict data/local/lm
 
 # # when "--stage 3" option is used below we skip the G2P steps, and use the
 # # if lexicon are already downloaded from Elyes's works then Stage=3 else Stage=0
-mkdir -p data/local/dict
+mkdir -p data/local/dict/cmudict
 cp cmu_dict/fr.dict data/local/dict/fr.dict
-local/prepare_dict.sh --stage 0 --nj 8 --cmd "$train_cmd" \
+#cp cmu_dict/fr.dict data/local/dict/cmudict
+local/prepare_dict.sh --stage 3 --nj 8 --cmd "$train_cmd" \
    data/local/lm data/local/lm data/local/dict
 
 ###### OOOOOOK
@@ -69,11 +70,11 @@ plpdir=plp
 fbankdir=fbank
 for part in dev test train; do
     #MFCC features
-    steps/make_mfcc.sh --cmd "$train_cmd" --nj 11 data/$part exp/make_mfcc/$part $mfccdir
-    steps/compute_cmvn_stats.sh data/$part exp/make_mfcc/$part $mfccdir
+    #steps/make_mfcc.sh --cmd "$train_cmd" --nj 3 data/$part exp/make_mfcc/$part $mfccdir
+    #steps/compute_cmvn_stats.sh data/$part exp/make_mfcc/$part $mfccdir
     #PLP features
-    #steps/make_plp.sh --cmd "$train_cmd" --nj 12 data/$part exp/make_plp/$part $plpdir
-    #steps/compute_cmvn_stats.sh data/$part exp/make_plp/$part $plpdir
+    steps/make_plp.sh --cmd "$train_cmd" --nj 3 data/$part exp/make_plp/$part $plpdir
+    steps/compute_cmvn_stats.sh data/$part exp/make_plp/$part $plpdir
     #Fbank
     #steps/make_fbank.sh --cmd "$train_cmd" --nj 12 data/$part exp/make_fbank/$part $fbankdir
     #steps/compute_cmvn_stats.sh data/$part exp/make_fbank/$part $fbankdir
@@ -84,37 +85,37 @@ done
 # # For the monophone stages we select the shortest utterances, which should make it
 # # easier to align the data from a flat start.
 
-utils/subset_data_dir.sh --shortest data/train 15000 data/train_15kshort
-utils/subset_data_dir.sh data/train 70000 data/train_70k
+utils/subset_data_dir.sh --shortest data/train 70000 data/train_70kshort
 utils/subset_data_dir.sh data/train 120000 data/train_120k
+#utils/subset_data_dir.sh data/train 120000 data/train_120k
 
 # # train a monophone system
- steps/train_mono.sh --boost-silence 1.25 --nj 12 --cmd "$train_cmd" \
-   data/train_15kshort data/lang exp/mono
+ steps/train_mono.sh --boost-silence 1.25 --nj 8 --cmd "$train_cmd" \
+   data/train_70kshort data/lang exp/mono
 
 # # decode using the monophone model
  (
    utils/mkgraph.sh --mono data/lang_test_tgsmall \
      exp/mono exp/mono/graph_tgsmall
    for test in test dev; do
-     steps/decode.sh --nj 4 --cmd "$decode_cmd" exp/mono/graph_tgsmall \
+     steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/mono/graph_tgsmall \
        data/$test exp/mono/decode_tgsmall_$test
    done
  )&
 
- steps/align_si.sh --boost-silence 1.25 --nj 12 --cmd "$train_cmd" \
-   data/train_70k data/lang exp/mono exp/mono_ali_70k
+ steps/align_si.sh --boost-silence 1.25 --nj 8 --cmd "$train_cmd" \
+   data/train_120k data/lang exp/mono exp/mono_ali_120k
 
 # # train a first delta + delta-delta triphone system on a subset of 70000 utterances
  steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" \
-     2000 10000 data/train_70k data/lang exp/mono_ali_70k exp/tri1
+     2000 10000 data/train_120k data/lang exp/mono_ali_120k exp/tri1
 
 # # decode using the tri1 model
  (
    utils/mkgraph.sh data/lang_test_tgsmall \
      exp/tri1 exp/tri1/graph_tgsmall
    for test in test dev; do
-     steps/decode.sh --nj 12 --cmd "$decode_cmd" exp/tri1/graph_tgsmall \
+     steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/tri1/graph_tgsmall \
        data/$test exp/tri1/decode_tgsmall_$test
      steps/lmrescore.sh --cmd "$decode_cmd" data/lang_test_{tgsmall,tgmed,tgsmall,tglarge} \
        data/$test exp/tri1/decode_{tgsmall,tgmed}_$test
@@ -125,13 +126,13 @@ utils/subset_data_dir.sh data/train 120000 data/train_120k
  )&
 
  steps/align_si.sh --nj 12 --cmd "$train_cmd" \
-   data/train_120k data/lang exp/tri1 exp/tri1_ali_120k
+   data/train data/lang exp/tri1 exp/tri1_ali_all
 
 
 # # train an LDA+MLLT system.
  steps/train_lda_mllt.sh --cmd "$train_cmd" \
     --splice-opts "--left-context=3 --right-context=3" 2500 15000 \
-    data/train_10k data/lang_nosp exp/tri1_ali_10k exp/tri2b
+    data/train data/lang exp/tri1_ali_all exp/tri2b
 
 # # decode using the LDA+MLLT model
 # (
