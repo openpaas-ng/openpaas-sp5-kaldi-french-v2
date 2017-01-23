@@ -107,11 +107,11 @@ def transformation_text(text):
     # change bounding | to < and > : OK
     balise=set(re.findall(r"\|\w+_?\w+\|",text))
     if len(balise)>0:
-        print(balise)
+        #print(balise)
         for b in balise:
             new_balise='<'+b[1:len(b)-1]+'>'
             text=text.replace(b,new_balise)
-        print(text)
+        #print(text)
     # c'est l'essaim ....
     text=text.lower()
     return bool,text
