@@ -101,7 +101,7 @@ utils/subset_data_dir.sh data/train 120000 data/train_120k
    utils/mkgraph.sh --mono data/lang_test_tgsmall \
      exp/mono exp/mono/graph_tgsmall
    for test in test dev; do
-     steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/mono/graph_tgsmall \
+     steps/decode.sh --nj 4 --cmd "$decode_cmd" exp/mono/graph_tgsmall \
        data/$test exp/mono/decode_tgsmall_$test
    done
  )&
