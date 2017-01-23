@@ -3,9 +3,9 @@ export KALDI_ROOT=`pwd`/../../..
 export PATH=$PWD/tools/festival/nsw/bin:$PWD/utils/:$KALDI_ROOT/tools/openfst/bin:$PWD:$PATH
 [ ! -f $KALDI_ROOT/tools/config/common_path.sh ] && echo >&2 "The standard file $KALDI_ROOT/tools/config/common_path.sh is not present -> Exit!" && exit 1
 . $KALDI_ROOT/tools/config/common_path.sh
-LANG=fr_Fr.UTF-8
-LANGUAGE=fr_FR.UTF-8
-LC_ALL=fr_FR.UTF-8
+export LANG=fr_Fr.UTF-8
+export LANGUAGE=fr_FR.UTF-8
+export LC_ALL=fr_FR.UTF-8
 
 # we use this both in the Data prepare (Normalization step) and in optional way in the LM training and the G2P-related scripts
 PYTHON='python2.7'

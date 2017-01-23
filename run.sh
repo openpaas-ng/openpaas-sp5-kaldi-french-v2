@@ -46,13 +46,15 @@ local/g2p/train_g2p.sh cmu_dict data/local/lm
 mkdir -p data/local/dict/cmudict
 cp cmu_dict/fr.dict data/local/dict/fr.dict
 #cp cmu_dict/fr.dict data/local/dict/cmudict
-local/prepare_dict.sh --stage 3 --nj 8 --cmd "$train_cmd" \
+local/prepare_dict.sh --stage 3 --nj 4 --cmd "$train_cmd" \
    data/local/lm data/local/lm data/local/dict
 
 ###### OOOOOOK
 
 utils/prepare_lang.sh data/local/dict \
    "<UNK>" data/local/lang_tmp data/lang
+
+export LC_ALL=fr_FR.UTF-8
 
 ###### OOOOOOK
  local/format_lms.sh --src-dir data/lang data/local/lm
@@ -70,27 +72,28 @@ plpdir=plp
 fbankdir=fbank
 for part in dev test train; do
     #MFCC features
-    #steps/make_mfcc.sh --cmd "$train_cmd" --nj 3 data/$part exp/make_mfcc/$part $mfccdir
-    #steps/compute_cmvn_stats.sh data/$part exp/make_mfcc/$part $mfccdir
+    steps/make_mfcc.sh --cmd "$train_cmd" --nj 4 data/$part exp/make_mfcc/$part $mfccdir
+    steps/compute_cmvn_stats.sh data/$part exp/make_mfcc/$part $mfccdir
     #PLP features
-    steps/make_plp.sh --cmd "$train_cmd" --nj 3 data/$part exp/make_plp/$part $plpdir
-    steps/compute_cmvn_stats.sh data/$part exp/make_plp/$part $plpdir
+    #steps/make_plp.sh --cmd "$train_cmd" --nj 3 data/$part exp/make_plp/$part $plpdir
+    #steps/compute_cmvn_stats.sh data/$part exp/make_plp/$part $plpdir
     #Fbank
     #steps/make_fbank.sh --cmd "$train_cmd" --nj 12 data/$part exp/make_fbank/$part $fbankdir
     #steps/compute_cmvn_stats.sh data/$part exp/make_fbank/$part $fbankdir
 done
+# utils/fix_data_dir.sh data/train
+
 
 # # Make some small data subsets for early system-build stages.  Note, there are 29k
 # # utterances in the train_clean_100 directory which has 100 hours of data.
 # # For the monophone stages we select the shortest utterances, which should make it
 # # easier to align the data from a flat start.
-
+utils/subset_data_dir.sh --shortest data/train 15000 data/train_15kshort
 utils/subset_data_dir.sh --shortest data/train 70000 data/train_70kshort
 utils/subset_data_dir.sh data/train 120000 data/train_120k
 #utils/subset_data_dir.sh data/train 120000 data/train_120k
-
 # # train a monophone system
- steps/train_mono.sh --boost-silence 1.25 --nj 8 --cmd "$train_cmd" \
+ steps/train_mono.sh --boost-silence 1.25 --nj 4 --cmd "$train_cmd" \
    data/train_70kshort data/lang exp/mono
 
 # # decode using the monophone model
