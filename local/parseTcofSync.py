@@ -62,7 +62,7 @@ def transformation_text(text):
 #text=re.sub(r"{[^{]+}"," ",text.strip())
         # Remove ? ! < > : OK
         #<[^\p{L}]|[^\p{L}]>|#+|<\p{L}+[ ]|<\p{L}+$
-        text=re.sub(r"\?|/|\!|<|>","",text)
+        text=re.sub(r":|\?|/|\!|<|>|#+","",text)
     # replace silence character with <sil> : OK
         #text=re.sub(r"(\+)", "<sil>", text)
         text=re.sub(r"(\+)", "!SIL", text)

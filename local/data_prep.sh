@@ -65,6 +65,7 @@ done
 
 # Sort all files
 # text
+#export LC_ALL=C
 cat $trans | sort -k1 > $trans.txt
 rm $trans
 mv $trans.txt $trans
@@ -92,7 +93,7 @@ utils/utt2spk_to_spk2utt.pl <$utt2spk >$spk2utt #|| exit 1
 cat $spk2utt | sort -k1 > $spk2utt.txt
 rm $spk2utt
 mv $spk2utt.txt $spk2utt
-
+#export LC_ALL=fr_FR.UTF-8
  ntrans=$(wc -l <$trans)
  nutt2spk=$(wc -l <$utt2spk)
  ! [ "$ntrans" -eq "$nutt2spk" ] && \
