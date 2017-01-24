@@ -55,7 +55,7 @@ done
 for wip in $(echo $word_ins_penalty | sed 's/,/ /g'); do
   $cmd LMWT=$min_lmwt:$max_lmwt $dir/scoring/log/score.LMWT.$wip.log \
     cat $dir/scoring/LMWT.$wip.tra \| \
-    utils/int2sym.pl -f 2- $symtab \| sed 's:\<UNK\>::g' \| \
+    utils/int2sym.pl -f 2- $symtab \| sed 's:\<unk\>::g' \| \
     compute-wer --text --mode=present \
     ark:$dir/scoring/test_filt.txt  ark,p:- ">&" $dir/wer_LMWT_$wip || exit 1;
 done

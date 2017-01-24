@@ -18,6 +18,7 @@ LM_train_text=/home/lingora/Documents/Linagora/Data/Tcof/tcof/3/Corpus/train
 #train dev
 for part in dev test train ; do
   # use underscore-separated names in data directories.
+  echo "prep $part"
   local/data_prep.sh $data/$part data/$part
 done
 ###### OOOOOK
@@ -52,7 +53,7 @@ local/prepare_dict.sh --stage 3 --nj 4 --cmd "$train_cmd" \
 ###### OOOOOOK
 
 utils/prepare_lang.sh data/local/dict \
-   "<UNK>" data/local/lang_tmp data/lang
+   "<unk>" data/local/lang_tmp data/lang
 
 export LC_ALL=fr_FR.UTF-8
 
