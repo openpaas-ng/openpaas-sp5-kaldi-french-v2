@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 from xml.etree import ElementTree as ET
 from unicodedata import normalize
 from sys import argv
 from num2words import num2words
+from unidecode import unidecode
 import re
 import os.path
-
+import sys
 # ( in text
 # ) in text
-
 def transformation_text(text):
     bool=True
     if "###" in text or len(re.findall(r"\[.+\]", text)) > 0 or \
@@ -22,7 +22,7 @@ def transformation_text(text):
     else:
         # 4x4
         # Remove noise sound (BIP) over Name of places and person
-        #text = re.sub(r"¤[^ ]+|[^ ]+¤|¤", "", text.strip())
+        #text = re.sub(r"Â¤[^ ]+|[^ ]+Â¤|Â¤", "", text.strip())
         if len(re.findall(r"\dx\d",text))>0:
             text=re.sub(r"x","  ",text)
         if len(re.findall("\d+h\d+",text))>0:
@@ -50,12 +50,12 @@ def transformation_text(text):
         text=re.sub(r'\.',' ',text)
         #text=re.sub(r"{[^{]+}"," ",text.strip())
         # Remove ? ! < > : OK
-        #<[^\p{L}]|[^\p{L}]>|<\p{L}+[ ]|<\p{L}+$
+        #<[^\p{L}]|[^\p{L}]>|#+|<\p{L}+[ ]|<\p{L}+$
         text=re.sub(r":|\?|/|\!|<|>|#+","",text)
         # replace silence character with <sil> : OK
         #text=re.sub(r"(\+)", "<sil>", text)
-        text=re.sub(r"(\+)", "", text)
-        text=re.sub(r"(///)", "", text)
+        text=re.sub(r"(\+)", "!SIL", text)
+        text=re.sub(r"(///)", "!SIL", text)
         #text=re.sub(r"(///)", "<long-sil>", text)
         if len(re.findall(r"/.+/", text)) > 0:
             #print "AVANT***********"+text
@@ -68,8 +68,8 @@ def transformation_text(text):
                         choosen_word = choosen_word.replace('/', '')
                         text = text.replace(unchoosen_text, choosen_word)
                         #print "Apres************"+text
-        # Remove noise sound (BIP) over Name of places and person
-        text=re.sub(r"(¤.+¤)",'',text)
+                        # Remove noise sound (BIP) over Name of places and person
+        text=re.sub(r"(Â¤.+Â¤)",'',text)
         # replace unkown syllable
         text=re.sub(r"\*+","",text)
         # cut of recording : OK
@@ -80,7 +80,6 @@ def transformation_text(text):
         text = re.sub(r"[ ]\'", " ", text)
         text = re.sub(r"\'", "\' ", text)
         # convert number if exist : OK
-
         num_list = re.findall(" \d+| \d+$", text)
         if len(num_list) > 0:
             #print text
@@ -96,21 +95,19 @@ def transformation_text(text):
     # change bounding | to < and > : OK
     #balise=set(re.findall(r"\|\w+_?\w+\|",text))
     #if len(balise)>0:
-    #    print(balise)
+        #print(balise)
     #    for b in balise:
     #        new_balise='<'+b[1:len(b)-1]+'>'
     #        text=text.replace(b,new_balise)
-    #    print(text)
+            #print(text)
     # c'est l'essaim ....
     text=text.lower()
     return bool,text
 if __name__=="__main__":
     # Inputs
     file_trs=argv[1]
-    basename=os.path.basename(file_trs.split('.')[0])
-    # MetaData File
-    file_meta = file_trs.split('.')[0] + '.xml'
-    #print file_trs.split('.')[0]
+    #print(file_trs)
+    #print file_trs
     # Read Trans File
     tree_trs = ET.parse(file_trs)
     trsdoc= tree_trs.getroot()
@@ -132,7 +129,7 @@ if __name__=="__main__":
                 # File text
                 # File speaker_gender
                 if bool and text!="":
-                    print text
+                    print(text)
                     #for spk_tuple in speaker_gender:
                     #    if spk_tuple[0]==spkr:
                     #        print >> spk2gender,'%s %s' % (seg_id, spk_tuple[1])
@@ -144,24 +141,16 @@ if __name__=="__main__":
             if count>0:
                 bool, text = transformation_text(text)
                 if bool and text!="":
-                    print text
+                    print(text)
             text=Element.tail.replace('\n', '')
             count=count+1
         elif Element.tag=="Comment" and has_attrib_speaker and not Element.tail is None:
             text=text+" "+Element.tail.replace('\n', '')
         elif Element.tag=="Event" and has_attrib_speaker and not Element.tail is None :
-            if Element.get('type')=='noise':
-                if Element.get('desc')=='rire':
-                    text=text+" "+Element.tail.replace('\n', '')
-                else:
-                    text=text+" "+Element.tail.replace('\n', '')
-            elif Element.get('type')=='pronounce':
-                text=text+" "+Element.tail.replace('\n', '')
-            else:
-                text=text+" "+Element.tail.replace('\n', '')
+            text=text+" "+Element.tail.replace('\n', '')
         elif Element.tag=="Who" and has_attrib_speaker and not Element.tail is None:
             text=text+" "+Element.tail.replace('\n', '')
     if count > 0 and has_attrib_speaker and not Element.tail is None:
         bool, text = transformation_text(text)
         if bool and text != "":
-            print text
+            print(text)
