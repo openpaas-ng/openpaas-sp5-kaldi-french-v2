@@ -41,7 +41,7 @@ done
 
 mkdir -p $dir/scoring/log
 # A changer suivant les balises utilisees dans la normalisation
-cat $data/text | sed 's:<NOISE>::g' | sed 's:<SPOKEN_NOISE>::g' > $dir/scoring/test_filt.txt
+cat $data/text | sed 's:<noise>::g' | sed 's:<spoken_noise>::g' | sed 's:<laugh>::g' > $dir/scoring/test_filt.txt
 
 for wip in $(echo $word_ins_penalty | sed 's/,/ /g'); do
   $cmd LMWT=$min_lmwt:$max_lmwt $dir/scoring/log/best_path.LMWT.$wip.log \
