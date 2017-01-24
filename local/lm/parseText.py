@@ -54,8 +54,8 @@ def transformation_text(text):
         text=re.sub(r":|\?|/|\!|<|>|#+","",text)
         # replace silence character with <sil> : OK
         #text=re.sub(r"(\+)", "<sil>", text)
-        text=re.sub(r"(\+)", "!SIL", text)
-        text=re.sub(r"(///)", "!SIL", text)
+        text=re.sub(r"(\+)", "", text)
+        text=re.sub(r"(///)", "", text)
         #text=re.sub(r"(///)", "<long-sil>", text)
         if len(re.findall(r"/.+/", text)) > 0:
             #print "AVANT***********"+text
