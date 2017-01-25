@@ -53,7 +53,7 @@ local/prepare_dict.sh --stage 3 --nj 4 --cmd "$train_cmd" \
 ###### OOOOOOK
 
 utils/prepare_lang.sh data/local/dict \
-   "<unk>" data/local/lang_tmp data/lang
+   "<UNK>" data/local/lang_tmp data/lang
 
 export LC_ALL=fr_FR.UTF-8
 
@@ -82,15 +82,16 @@ for part in dev test train; do
     #steps/make_fbank.sh --cmd "$train_cmd" --nj 12 data/$part exp/make_fbank/$part $fbankdir
     #steps/compute_cmvn_stats.sh data/$part exp/make_fbank/$part $fbankdir
 done
-# utils/fix_data_dir.sh data/train
-
+utils/fix_data_dir.sh data/train
+utils/fix_data_dir.sh data/test
+utils/fix_data_dir.sh data/dev
 
 # # Make some small data subsets for early system-build stages.  Note, there are 29k
 # # utterances in the train_clean_100 directory which has 100 hours of data.
 # # For the monophone stages we select the shortest utterances, which should make it
 # # easier to align the data from a flat start.
 utils/subset_data_dir.sh --shortest data/train 15000 data/train_15kshort
-utils/subset_data_dir.sh --shortest data/train 70000 data/train_70kshort
+utils/subset_data_dir.sh data/train 70000 data/train_70k
 utils/subset_data_dir.sh data/train 120000 data/train_120k
 #utils/subset_data_dir.sh data/train 120000 data/train_120k
 # # train a monophone system
