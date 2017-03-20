@@ -7,6 +7,7 @@ from num2words import num2words
 from unidecode import unidecode
 import re
 import os.path
+import sys
 
 def transformation_text(text):
     bool=True
@@ -91,7 +92,8 @@ def transformation_text(text):
         text=re.sub(r"\s{2,}"," ",text)
         text = re.sub("^ ", '', text)
     # change bounding | to < and > : OK
-    balise=set(re.findall(r"\|\w+_?\w+\|",text))
+    #balise=set(re.findall(r"\|\w+_?\w+\|",text))
+    balise=set(re.findall(r"\|.+\|",text))
     if len(balise)>0:
         #print(balise)
         for b in balise:
@@ -103,6 +105,7 @@ def transformation_text(text):
     return bool,text
 if __name__=="__main__":
     # Inputs
+    duration=5
     file_trs=argv[1]
     #print(file_trs)
     #print file_trs
@@ -177,6 +180,7 @@ if __name__=="__main__":
     end_utt=0
     sourceEncoding = "iso-8859-1"
     targetEncoding = "utf-8"
+    seg_duration=0
     for Element in trsdoc.iter():
         if Element.tag=="Turn" and Element.get('speaker') is None:
             has_attrib_speaker=False
@@ -193,11 +197,15 @@ if __name__=="__main__":
                 # File utt2spk
                 # File text
                 # File speaker_gender
-                if bool and text!="":
+                seg_duration=seg_duration+(float(endTime)-float(start_utt))
+                if bool and text!="" and seg_duration>=duration:
+                    Spk_that_contribute_to_meeting.add(spkr)
                     segments_file.write(seg_id+" "+basename+" "+str(start_utt)+" "+str(endTime)+"\n")
                     start_utt=endTime
+                    seg_duration=0
                     utt2spk_file.write(seg_id+" "+spkr_id+"\n")
                     text_file.write(seg_id+" "+text+"\n")
+                    text=""
                     #for spk_tuple in speaker_gender:
                     #    if spk_tuple[0]==spkr:
                     #        print >> spk2gender,'%s %s' % (seg_id, spk_tuple[1])
@@ -207,7 +215,6 @@ if __name__=="__main__":
             spkr = Element.get('speaker')
             #print file_trs
             spkr=spkr.split()[0]
-            Spk_that_contribute_to_meeting.add(spkr)
             #print spkr
             # Get StartSegment
             startTime = Element.get('startTime')
@@ -224,12 +231,16 @@ if __name__=="__main__":
                 spkr_id=str(basename)+'_spk-%03d' % int(spkr.split('spk')[1])
                 bool, text = transformation_text(text)
                 end_utt=Time_start_current_sync
-                if bool and text!="":
+                seg_duration=seg_duration+(float(end_utt)-float(start_utt))
+                if bool and text!="" and seg_duration>=duration:
+                    Spk_that_contribute_to_meeting.add(spkr)
                     segments_file.write(seg_id+" "+basename+" "+str(start_utt)+" "+str(end_utt)+"\n")
                     start_utt=Time_start_current_sync
                     utt2spk_file.write(seg_id+" "+spkr_id+"\n")
                     text_file.write(seg_id+" "+text+"\n")
-            text=Element.tail.replace('\n', '')
+                    text=""
+                    seg_duration=0
+            text=text+" "+Element.tail.replace('\n', '')
             count=count+1
         elif Element.tag=="Comment" and has_attrib_speaker and not Element.tail is None:
             text=text+" "+Element.tail.replace('\n', '')
@@ -254,7 +265,7 @@ if __name__=="__main__":
     #print count
     #print has_attrib_speaker
     #print Element.tail
-    if count > 0 and has_attrib_speaker and not Element.tail is None:
+    if count > 0 and has_attrib_speaker and not Element.tail is None and seg_duration>duration:
         #print text
         ### Save Files For Kaldi ###
         seg_id = str(basename) + '_spk-%03d_Turn-%03d_seg-%07d' % (
@@ -262,6 +273,7 @@ if __name__=="__main__":
         spkr_id = str(basename) + '_spk-%03d' % int(spkr.split('spk')[1])
         bool, text = transformation_text(text)
         if bool and text != "":
+            Spk_that_contribute_to_meeting.add(spkr)
             segments_file.write(seg_id+" "+basename+" "+str(start_utt)+" "+str(endTime)+"\n")
             utt2spk_file.write(seg_id+" "+spkr_id+"\n")
             text_file.write(seg_id+" "+text+"\n")
