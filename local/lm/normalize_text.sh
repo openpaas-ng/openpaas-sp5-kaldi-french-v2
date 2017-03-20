@@ -27,8 +27,10 @@ for b in $(cat $in_list); do
     echo "Start processing $id at $(date '+%T %F')"
     in_file=$b/$id.trs
     [[ -f "$in_file" ]] || { echo "WARNING: $in_file does not exists"; continue; }
+    #python3 local/parse_AudioDB.py $b
     python3 local/lm/parseText.py $in_file |\
-    $PYTHON local/lm/pre_filter.py /dev/stdin $out_root/corpus_train.txt
+    $PYTHON local/lm/pre_filter.py /dev/stdin $out_root/$id.txt
+    #$PYTHON local/lm/pre_filter.py /dev/stdin $out_root/corpus_train.txt
     processed=$((processed + 1))
     echo "Processing of $id has finished at $(date '+%T %F') [$processed texts ready so far]"
 done
