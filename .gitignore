@@ -6,5 +6,8 @@ mfcc/
 plp/
 fbank/
 data-*/
-exp-*/
+exp*/
 perplexity_*/
+eval-snr/
+Evaluation/
+audio_test/
