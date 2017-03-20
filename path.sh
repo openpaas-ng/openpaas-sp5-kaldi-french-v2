@@ -29,3 +29,7 @@ sequitur_path="$(dirname $sequitur)/lib/$PYTHON/site-packages"
 
 # Directory under which the LM training corpus should be extracted
 LM_CORPUS_ROOT=./lm-corpus
+
+# Export SNR program
+SNR_ROOT=/home/lingora/Documents/Linagora/snr_speech/snr/util/snr_calculator/current
+export PATH=$PATH:$SNR_ROOT
