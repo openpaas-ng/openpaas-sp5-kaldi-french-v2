@@ -98,7 +98,7 @@ if [ "$stage" -le 4 ]; then
   echo "This implementation assumes that you have a lot of free RAM(> 12GB) on your machine"
   echo "If that's not the case, consider something like: http://joshua-decoder.org/4.0/large-lms.html"
   ngram-count -order 3  -kndiscount -interpolate \
-    -unk -map-unk "<UNK>" -limit-vocab -vocab $vocab -text $full_corpus -lm $trigram_lm || exit 1
+    -unk -map-unk "<unk>" -limit-vocab -vocab $vocab -text $full_corpus -lm $trigram_lm || exit 1
   du -h $trigram_lm
 fi
 
@@ -127,7 +127,7 @@ fi
    echo "Training a 4-gram LM ..."
    command -v ngram-count 1>/dev/null 2>&1 || { echo "Please install SRILM and set path.sh accordingly"; exit 1; }
    ngram-count -order 4  -kndiscount -interpolate \
-     -unk -map-unk "<UNK>" -limit-vocab -vocab $vocab -text $full_corpus -lm $fourgram_lm || exit 1
+     -unk -map-unk "<unk>" -limit-vocab -vocab $vocab -text $full_corpus -lm $fourgram_lm || exit 1
    du -h $fourgram_lm
  fi
 
